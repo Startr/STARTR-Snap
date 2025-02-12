@@ -41,6 +41,9 @@ The definitive source of how to use Snap! is the [Snap! Manual](help/SnapManual.
 _Please read the [Contribution Guidelines](docs/CONTRIBUTING.md) before making an issue or pull request. Thanks!_
 
 ## License
+
+Startr Features Copyright Startr LLC 2022-2025
+
 Copyright (C) 2008-2025 by Jens Mönig and Brian Harvey
 
 Snap! is free software: you can redistribute it and/or modify
