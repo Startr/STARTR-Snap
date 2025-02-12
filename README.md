@@ -1,4 +1,4 @@
-![Startr Snap Logo](src/startr_snap_logo_sm.png)
+![Startr Snap Logo](https://snap.startr.cloud/static/img/topbar-logo.png)
 # Startr Snap: Build Your Own Blocks with AI & Robotics
 
 [https://snap.startr.cloud][snap]
