@@ -162,7 +162,7 @@ CustomHatBlockMorph*/
 
 // Global stuff ////////////////////////////////////////////////////////
 
-modules.blocks = '2025-January-25';
+modules.blocks = '2025-September-06';
 
 var SyntaxElementMorph;
 var BlockMorph;
@@ -394,10 +394,11 @@ SyntaxElementMorph.prototype.labelParts = {
         type: 'input',
         tags: 'read-only static',
         menu: {
-            'name': ['name'],
-            'width': ['width'],
-            'height': ['height'],
-            'pixels': ['pixels']
+            'name' : ['name'],
+            'width' : ['width'],
+            'height' : ['height'],
+            'pixels' : ['pixels'],
+            'colors' : ['colors']
         }
     },
     '%imgsource': {
@@ -695,24 +696,26 @@ SyntaxElementMorph.prototype.labelParts = {
         menu: {
             abs: ['abs'],
             // '\u2212' : ['\u2212'], // minus-sign
-            neg: ['neg'],
-            sign: ['sign'],
-            ceiling: ['ceiling'],
-            floor: ['floor'],
-            sqrt: ['sqrt'],
-            sin: ['sin'],
-            cos: ['cos'],
-            tan: ['tan'],
-            asin: ['asin'],
-            acos: ['acos'],
-            atan: ['atan'],
-            ln: ['ln'],
-            log: ['log'],
-            lg: ['lg'],
-            'e^': ['e^'],
-            '10^': ['10^'],
-            '2^': ['2^'],
-            id: ['id']
+            neg : ['neg'],
+            sign : ['sign'],
+            ceiling : ['ceiling'],
+            floor : ['floor'],
+            sqrt : ['sqrt'],
+            sin : ['sin'],
+            cos : ['cos'],
+            tan : ['tan'],
+            asin : ['asin'],
+            acos : ['acos'],
+            atan : ['atan'],
+            ln : ['ln'],
+            log : ['log'],
+            lg : ['lg'],
+            'e^' : ['e^'],
+            '10^' : ['10^'],
+            '2^' : ['2^'],
+            'σ' : ['sigmoid'],
+            // '∂σ' : ['sigmoid\''],
+            id: ['id'],
         }
     },
     '%layer': {
@@ -735,30 +738,73 @@ SyntaxElementMorph.prototype.labelParts = {
             'r-g-b(-a)': ['r-g-b(-a)']
         }
     },
+    '%color': {
+        type: 'input',
+        tags: 'read-only static',
+        menu: {
+            hue : ['hue'],
+            saturation : ['saturation'],
+            brightness : ['brightness'],
+            transparency : ['transparency'],
+            '~' : null,
+            'h-s-b-t' : ['h-s-b-t'],
+            'r-g-b-a' : ['r-g-b-a']
+        }
+    },
+    '%color': {
+        type: 'input',
+        tags: 'read-only static',
+        menu: {
+            hue : ['hue'],
+            saturation : ['saturation'],
+            brightness : ['brightness'],
+            transparency : ['transparency'],
+            '~' : null,
+            'h-s-b-t' : ['h-s-b-t'],
+            'r-g-b-a' : ['r-g-b-a']
+        }
+    },
+    '%color': {
+        type: 'input',
+        tags: 'read-only static',
+        menu: {
+            hue : ['hue'],
+            saturation : ['saturation'],
+            brightness : ['brightness'],
+            transparency : ['transparency'],
+            '~' : null,
+            'h-s-b-t' : ['h-s-b-t'],
+            'r-g-b-a' : ['r-g-b-a']
+        }
+    },
     '%pen': {
         type: 'input',
         tags: 'read-only static',
         menu: {
-            size: ['size'],
-            hue: ['hue'],
-            saturation: ['saturation'],
-            brightness: ['brightness'],
-            transparency: ['transparency'],
-            '~': null,
-            'r-g-b-a': ['r-g-b-a']
+            size : ['size'],
+            color : ['color'],
+            '~' : null,
+            hue : ['hue'],
+            saturation : ['saturation'],
+            brightness : ['brightness'],
+            transparency : ['transparency'],
+            '~~' : null,
+            'r-g-b-a' : ['r-g-b-a']
         }
     },
     '%asp': { // aspect
         type: 'input',
         tags: 'read-only static',
         menu: {
-            hue: ['hue'],
-            saturation: ['saturation'],
-            brightness: ['brightness'],
-            transparency: ['transparency'],
-            'r-g-b-a': ['r-g-b-a'],
-            '~': null,
-            sprites: ['sprites'],
+            color : ['color'],
+            '~' : null,
+            hue : ['hue'],
+            saturation : ['saturation'],
+            brightness : ['brightness'],
+            transparency : ['transparency'],
+            'r-g-b-a' : ['r-g-b-a'],
+            '~~' : null,
+            sprites : ['sprites'],
         }
     },
     '%txtfun': {
@@ -819,6 +865,11 @@ SyntaxElementMorph.prototype.labelParts = {
     '%var': {
         type: 'input',
         tags: 'read-only static', // if "static" is removed, enable auto-ringify
+        menu: 'getVarNamesDict'
+    },
+    '%hyperVar': {
+        type: 'input',
+        tags: 'read-only',
         menu: 'getVarNamesDict'
     },
     '%shd': {
@@ -1133,8 +1184,7 @@ SyntaxElementMorph.prototype.labelParts = {
 
     // other single types
     '%clr': {
-        type: 'color',
-        tags: 'static'
+        type: 'color'
     },
     '%br': {
         type: 'break'
@@ -1176,6 +1226,21 @@ SyntaxElementMorph.prototype.labelParts = {
         label: ['to', 'with data'],
         tags: 'static widget',
         max: 2
+    },
+    '%survey': {
+        type: 'multi',
+        slots: ['%rcv', '%s'],
+        label: ['from', 'with data'],
+        tags: 'static widget',
+        max: 2
+    },
+    '%hsbt': {
+        type: 'multi',
+        slots: '%n',
+        label: ['hue', 'saturation', 'brightness', 'transparency'],
+        dflt: [0, 100, 100, '0'], // last zero needs to be a string to show up
+        defaults: 1,
+        max: 4
     },
     '%scriptVars': {
         type: 'multi',
@@ -1684,15 +1749,17 @@ SyntaxElementMorph.prototype.getVarNamesDict = function () {
             // add settable object attributes
             dict['~'] = null;
             dict.my = [{// wrap the submenu into a 1-item array to translate it
-                'anchor': ['my anchor'],
-                'parent': ['my parent'],
-                'name': ['my name'],
-                'temporary?': ['my temporary?'],
-                'dangling?': ['my dangling?'],
-                'draggable?': ['my draggable?'],
-                'rotation style': ['my rotation style'],
-                'rotation x': ['my rotation x'],
-                'rotation y': ['my rotation y']
+                'anchor' : ['my anchor'],
+                'parent' : ['my parent'],
+                'name' : ['my name'],
+                'temporary?' : ['my temporary?'],
+                'dangling?' : ['my dangling?'],
+                'draggable?' : ['my draggable?'],
+                'rotation style' : ['my rotation style'],
+                'rotation x' : ['my rotation x'],
+                'rotation y' : ['my rotation y'],
+                'scripts' : ['my scripts']
+
             }];
             if (this.world().currentKey === 16) { // shift
                 dict.my[0]['~'] = null; // don't forget we're inside an array...
@@ -1898,79 +1965,79 @@ SyntaxElementMorph.prototype.labelPart = function (spec) {
                 part.shadowColor = this.color.darker(this.labelContrast);
                 part.shadowOffset = MorphicPreferences.isFlat ?
                     ZERO : this.embossing;
-                part.fixLayout();
+            part.fixLayout();
+            break;
+        case 'c':
+            part = new CSlotMorph();
+            break;
+        case 'command slot':
+            part = new CommandSlotMorph();
+            break;
+        case 'ring':
+            part = new RingMorph();
+            part.color = SpriteMorph.prototype.blockColor.other;
+            part.selector = info.selector;
+            part.setSpec(info.spec);
+            part.isDraggable = true;
+            break;
+        case 'ring slot':
+            switch (info.kind) {
+            case 'command':
+                part = new RingCommandSlotMorph();
                 break;
-            case 'c':
-                part = new CSlotMorph();
+            case 'reporter':
+                part = new RingReporterSlotMorph();
                 break;
-            case 'command slot':
-                part = new CommandSlotMorph();
-                break;
-            case 'ring':
-                part = new RingMorph();
-                part.color = SpriteMorph.prototype.blockColor.other;
-                part.selector = info.selector;
-                part.setSpec(info.spec);
-                part.isDraggable = true;
-                break;
-            case 'ring slot':
-                switch (info.kind) {
-                    case 'command':
-                        part = new RingCommandSlotMorph();
-                        break;
-                    case 'reporter':
-                        part = new RingReporterSlotMorph();
-                        break;
-                    case 'predicate':
-                        part = new RingReporterSlotMorph(true);
-                        break;
-                    default:
-                        throw new Error('unknown ring kind: "' + info.kind + '"');
-                }
-                break;
-            case 'template':
-                part = new TemplateSlotMorph(info.label);
-                break;
-            case 'color':
-                part = new ColorSlotMorph();
-                break;
-            case 'break':
-                part = new Morph();
-                part.setExtent(ZERO);
-                part.isBlockLabelBreak = true;
-                part.getSpec = () => '%br';
-                break;
-            case 'variable':
-                part = new TemplateSlotMorph(info.label);
-                part = new ReporterBlockMorph();
-                part.category = 'variables';
-                part.color = SpriteMorph.prototype.blockColor.variables;
-                part.setSpec(localize('Input name'));
-                break;
-            case 'multi':
-                part = new MultiArgMorph(
-                    info.slots,
-                    info.label,
-                    info.min || 0,
-                    spec,
-                    null, null, null, null, null,
-                    info.infix,
-                    info.collapse,
-                    info.dflt,
-                    info.group
-                );
-                part.maxInputs = info.max;
-                part.initialSlots = Math.max( // this needs some fixing
-                    part.initialSlots,
-                    isNil(info.min) ? 0 : +info.min,
-                    isNil(info.defaults) ? 0 : +info.defaults
-                );
-                for (i = 0; i < info.defaults || 0; i += 1) {
-                    part.addInput();
-                }
+            case 'predicate':
+                part = new RingReporterSlotMorph(true);
                 break;
             default:
-                throw new Error('unknown label part type: "' + info.type + '"');
+                throw new Error('unknown ring kind: "' + info.kind + '"');
+            }
+            break;
+        case 'template':
+            part = new TemplateSlotMorph(info.label);
+            break;
+        case 'color':
+            part = new ColorSlotMorph();
+            break;
+        case 'break':
+            part = new Morph();
+            part.setExtent(ZERO);
+            part.isBlockLabelBreak = true;
+            part.getSpec = () => '%br';
+            break;
+        case 'variable':
+            part = new TemplateSlotMorph(info.label);
+            part = new ReporterBlockMorph();
+            part.category = 'variables';
+            part.color = SpriteMorph.prototype.blockColor.variables;
+            part.setSpec(localize('Input name'));
+            break;
+        case 'multi':
+            part = new MultiArgMorph(
+                info.slots,
+                info.label,
+                info.min || 0,
+                spec,
+                null, null, null, null, null,
+                info.infix,
+                info.collapse,
+                info.dflt,
+                info.group
+            );
+            part.setMaxSlots(info.max);
+            part.initialSlots = Math.max( // this needs some fixing
+                part.initialSlots,
+                isNil(info.min) ? 0 : +info.min,
+                isNil(info.defaults) ? 0 : +info.defaults
+            );
+            for (i = 0; i < info.defaults || 0; i += 1) {
+                part.addInput();
+            }
+            break;
+        default:
+            throw new Error('unknown label part type: "' + info.type + '"');
         }
 
         // apply the tags
@@ -2656,6 +2723,11 @@ SyntaxElementMorph.prototype.showBubble = function (value, exportPic, target) {
             null,
             value
         );
+    } else if (value instanceof Color) {
+        morphToShow = SpriteMorph.prototype.colorSwatch(
+            value,
+            this.fontSize * 1.4
+        );
     } else if (isString(value)) {
         // shorten the string, commented out because we now scroll it
         // txt  = value.length > 500 ? value.slice(0, 500) + '...' : value;
@@ -2742,6 +2814,7 @@ SyntaxElementMorph.prototype.showBubble = function (value, exportPic, target) {
 };
 
 SyntaxElementMorph.prototype.exportPictureWithResult = function (aBubble) {
+    if (this.removeHighlight) {this.removeHighlight(); }
     var ide = this.parentThatIsA(IDE_Morph) ||
         this.parentThatIsA(BlockEditorMorph).target.parentThatIsA(
             IDE_Morph
@@ -3067,6 +3140,7 @@ BlockMorph.prototype.init = function () {
     this.instantiationSpec = null; // spec to set upon fullCopy() of template
     this.category = null; // for zebra coloring (non persistent)
     this.isCorpse = false; // marked for deletion fom a custom block definition
+    this.afterglow = 0; // frame count-down for displaying the "active" halo
 
     BlockMorph.uber.init.call(this);
     this.color = new Color(102, 102, 102);
@@ -3794,14 +3868,8 @@ BlockMorph.prototype.userMenu = function () {
         });
         return menu;
     }
-    if (this.parent.parentThatIsA(RingMorph)) {
-        menu.addLine();
-        menu.addItem("unringify", 'unringify');
-        menu.addItem("ringify", 'ringify');
-        return menu;
-    }
     if (contains(
-        ['doBroadcast', 'doBroadcastAndWait', 'receiveMessage',
+        ['doBroadcast', 'doBroadcastAndWait', 'reportPoll', 'receiveMessage',
             'receiveOnClone', 'receiveGo'],
         this.selector
     )) {
@@ -3812,6 +3880,12 @@ BlockMorph.prototype.userMenu = function () {
                 "senders..." : "receivers..."),
             'showMessageUsers'
         );
+    }
+    if (this.parent.parentThatIsA(RingMorph)) {
+        if (!hasLine) {menu.addLine(); }
+        menu.addItem("unringify", 'unringify');
+        menu.addItem("ringify", 'ringify');
+        return menu;
     }
     if (this.parent instanceof ReporterSlotMorph
         || (this.parent instanceof CommandSlotMorph)
@@ -3862,9 +3936,10 @@ BlockMorph.prototype.messageUsers = function () {
     // 'receiveMessage', 'receiveOnClone', 'receiveGo']
 
     var ide = this.parentThatIsA(IDE_Morph) ||
-        this.parentThatIsA(BlockEditorMorph)
-            .target.parentThatIsA(IDE_Morph),
-        isSender = this.selector.indexOf('doBroadcast') === 0,
+            this.parentThatIsA(BlockEditorMorph)
+                .target.parentThatIsA(IDE_Morph),
+        isSender = this.selector === 'reportPoll' ||
+            this.selector.indexOf('doBroadcast') === 0,
         isReceiver = this.selector.indexOf('receive') === 0,
         getter = isReceiver ? 'allSendersOf' : 'allHatBlocksFor',
         inputs = this.inputs(),
@@ -3918,7 +3993,9 @@ BlockMorph.prototype.isSending = function (message, receiverName, known = []) {
         ) {
             return true;
         }
-        if (morph.selector && morph.selector.indexOf('doBroadcast') === 0) {
+        if (morph.selector && (morph.selector === 'reportPoll' ||
+            morph.selector.indexOf('doBroadcast') === 0)
+        ) {
             inputs = morph.inputs();
             event = inputs[0].evaluate();
             if (event instanceof Array) {
@@ -5507,6 +5584,7 @@ BlockMorph.prototype.removeHighlight = function () {
     if (highlight !== null) {
         this.fullChanged();
         this.removeChild(highlight);
+        this.afterglow = 0;
     }
     return highlight;
 };
@@ -8249,6 +8327,12 @@ RingMorph.prototype.render = function (ctx) {
 // RingMorph dragging and dropping
 
 RingMorph.prototype.rootForGrab = function () {
+    if (this.parent?.isTemplate) {
+        return this.parent;
+    } else if (this.parent instanceof MultiArgMorph &&
+            this.parent.parent?.isTemplate) {
+        return this.parent.parent;
+    }
     if (this.isDraggable) {
         return this;
     }
@@ -11688,8 +11772,8 @@ InputSlotMorph.prototype.clonablesMenuWithTurtle = function (searching) {
 
     if (rcvr instanceof SpriteMorph) {
         dict.myself = ['myself'];
-        dict['Turtle sprite'] = ['Turtle sprite'];
     }
+    dict['Turtle sprite'] = ['Turtle sprite'];
     stage.children.forEach(morph => {
         if (morph instanceof SpriteMorph && !morph.isTemporary) {
             if (!allNames.some(n => snapEquals(n, morph.name))) {
@@ -11792,6 +11876,7 @@ InputSlotMorph.prototype.typesMenu = function () {
     }
     dict.costume = ['costume'];
     dict.sound = ['sound'];
+    dict.color = ['color'];
     dict.command = ['command'];
     dict.reporter = ['reporter'];
     dict.predicate = ['predicate'];
@@ -13769,11 +13854,24 @@ function ColorSlotMorph(clr) {
 ColorSlotMorph.prototype.init = function (clr) {
     ColorSlotMorph.uber.init.call(this);
     this.alpha = 1;
-    this.setColor(clr || new Color(145, 26, 68));
+    this.setColor(clr);
+    this.fixLayout();
 };
 
 ColorSlotMorph.prototype.getSpec = function () {
     return '%clr';
+};
+
+ColorSlotMorph.prototype.setContents = function (clr) {
+    this.setColor(clr);
+};
+
+ColorSlotMorph.prototype.setColor = function (clr) {
+    ColorSlotMorph.uber.setColor.call(
+        this,
+        isString(clr) && clr.length > 10 ? Color.fromString(clr)
+            : (clr instanceof Color ? clr : new Color(145, 26, 68))
+    );
 };
 
 // ColorSlotMorph  color sensing:
@@ -14146,6 +14244,16 @@ MultiArgMorph.prototype.initGroup = function (aBlockSpec) {
         }
         this.labelText = labels.map(arr => arr.join(' '));
     }
+    // special case: if maxSlots equals the input group size
+    // expand and collapse the group inputs one by one
+    // otherwise group-wise
+    if (this.slotSpec instanceof Array) { // input group
+        if (this.groupInputs === this.maxInputs) {
+            this.groupInputs = 1;
+        } else {
+            this.groupInputs = this.slotSpec.length;
+        }
+    }
 };
 
 MultiArgMorph.prototype.collapseLabel = function () {
@@ -14283,6 +14391,17 @@ MultiArgMorph.prototype.setMinSlots = function (minSlots) {
 
 MultiArgMorph.prototype.setMaxSlots = function (maxSlots) {
     this.maxInputs = +maxSlots;
+
+    // special case: if maxSlots equals the input group size
+    // expand and collapse the group inputs one by one
+    // otherwise group-wise
+    if (this.slotSpec instanceof Array) { // input group
+        if (this.slotSpec.length === this.maxInputs) {
+            this.groupInputs = 1;
+        } else {
+            this.groupInputs = this.slotSpec.length;
+        }
+    }
 };
 
 // MultiArgMorph defaults:
@@ -16326,6 +16445,9 @@ CommentMorph.prototype.snap = function (hand) {
     scripts.clearDropInfo();
     target = scripts.closestBlock(this, hand);
     if (target !== null) {
+        if (this.block) {
+            this.block.comment = null;
+        }
         target.comment = this;
         this.block = target;
         if (this.snapSound) {
@@ -16344,7 +16466,6 @@ CommentMorph.prototype.snap = function (hand) {
     if (hand) {
         scripts.recordDrop(hand.grabOrigin);
     }
-
 };
 
 // CommentMorph sticking to blocks

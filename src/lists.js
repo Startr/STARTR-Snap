@@ -65,7 +65,7 @@ Context, ZERO, WHITE, ReadStream, Process*/
 
 // Global settings /////////////////////////////////////////////////////
 
-modules.lists = '2025-January-07';
+modules.lists = '2025-June-12';
 
 var List;
 var ListWatcherMorph;
@@ -359,6 +359,18 @@ List.prototype.lookup = function (key, ifNone = '') {
         return parent.variables.getVar(key);
     }
     return typeof ifNone === 'function' ? ifNone() : ifNone;
+};
+
+List.prototype.hasKey = function (key) {
+    // look up if the given key is present and not inherited
+    var rec;
+    if (parseFloat(key) === +key) { // treat as numerical index
+        return true;
+    }
+    rec = this.itemsArray().find(elem => elem instanceof List &&
+        elem.length() > 0 &&
+        snapEquals(elem.at(1), key));
+    return !isNil(rec);
 };
 
 List.prototype.bind = function (key, value) {
@@ -697,6 +709,14 @@ List.prototype.quickRank = function () {
     return item instanceof List ? item.quickRank() + 1 : 1;
 };
 
+List.prototype.firstAtom = function () {
+    // answer the first non-list value in my sublists,
+    // only look at the first item of each dimension,
+    // assuming regularly shaped nested lists
+    var item = this.at(1);
+    return item instanceof List ? item.firstAtom() : item;
+};
+
 List.prototype.shape = function () {
     // answer a list of the maximum size for each dimension
     var dim,
@@ -814,7 +834,9 @@ List.prototype.reshape = function (dimensions) {
     // if no dimensions, report a scalar
     if (dim.isEmpty()) {return src[0]; }
 
-    size = dim.itemsArray().reduce((a, b) => a * b);
+    size = Math.ceil(
+        dim.itemsArray().reduce((a, b) => Math.ceil(a) * Math.ceil(b))
+    );
     if (size === Infinity) {return new List(); }
 
     // make sure the items count matches the specified target dimensions
@@ -871,7 +893,7 @@ List.prototype.folded = function (dimensions) {
         return this.map(e => e);
     }
     for (i = len; i > 1; i -= 1) {
-        trg = trg.asChunksOf(dimensions.at(i));
+        trg = trg.asChunksOf(Math.ceil(dimensions.at(i)));
     }
     return trg;
 };
@@ -1459,7 +1481,7 @@ ListWatcherMorph.prototype.init = function (list, parentCell) {
 
     // elements declarations
     this.label = new StringMorph(
-        localize('length: ') + this.list.length(),
+        localize('length') + ': ' + this.list.length(),
         SyntaxElementMorph.prototype.fontSize,
         null,
         false,
@@ -1676,7 +1698,7 @@ ListWatcherMorph.prototype.update = function (anyway) {
 };
 
 ListWatcherMorph.prototype.updateLength = function (notDone) {
-    this.label.text = localize('length: ') + this.list.length();
+    this.label.text = localize('length') + ': ' + this.list.length();
     if (notDone) {
         this.label.color = new Color(0, 0, 100);
     } else {
